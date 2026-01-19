@@ -5,8 +5,9 @@ import numpy as np
 import tensorflow as tf
 
 
-MODEL_PATH = Path("mnist_model.keras")
-OUTPUT_PATH = Path("static/model/weights.json")
+ROOT_DIR = Path(__file__).resolve().parents[1]
+MODEL_PATH = Path(__file__).resolve().parent / "mnist_model.keras"
+OUTPUT_PATH = ROOT_DIR / "static" / "model" / "weights.json"
 
 
 def serialize_dense(layer: tf.keras.layers.Dense) -> dict:

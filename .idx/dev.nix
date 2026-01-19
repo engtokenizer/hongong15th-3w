@@ -6,8 +6,8 @@
   # Use https://search.nixos.org/packages to find packages
   packages = [
     # pkgs.go
-    # pkgs.python311
-    # pkgs.python311Packages.pip
+    pkgs.python311Full
+    pkgs.python311Packages.pip
     # pkgs.nodejs_20
     # pkgs.nodePackages.nodemon
   ];
@@ -23,16 +23,13 @@
     previews = {
       enable = true;
       previews = {
-        # web = {
-        #   # Example: run "npm run dev" with PORT set to IDX's defined port for previews,
-        #   # and show it in IDX's web preview panel
-        #   command = ["npm" "run" "dev"];
-        #   manager = "web";
-        #   env = {
-        #     # Environment variables to set for your server
-        #     PORT = "$PORT";
-        #   };
-        # };
+        web = {
+          command = [".venv/bin/python" "app.py"];
+          manager = "web";
+          env = {
+            PORT = "$PORT";
+          };
+        };
       };
     };
     # Workspace lifecycle hooks
@@ -48,6 +45,7 @@
       onStart = {
         # Example: start a background task to watch and re-build backend code
         # watch-backend = "npm run watch-backend";
+        setup-python = "if [ ! -d .venv ]; then python3 -m venv .venv; fi && ./.venv/bin/pip install -r requirements.txt";
       };
     };
   };
