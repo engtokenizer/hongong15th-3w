@@ -5,8 +5,8 @@ const clearBtn = document.getElementById("clear-btn");
 const result = document.getElementById("result");
 
 let drawing = false;
-const apiBase = (window.API_BASE || "").replace(/\/$/, "");
-const predictUrl = apiBase ? `${apiBase}/predict` : "/predict";
+const MODEL_URL = "/static/model/weights.json";
+let modelWeights = null;
 
 const setBackground = () => {
   ctx.fillStyle = "#000";
@@ -51,26 +51,102 @@ const clearCanvas = () => {
   result.textContent = "Prediction: -";
 };
 
-const predictDigit = async () => {
-  const payload = { image: canvas.toDataURL("image/png") };
-  result.textContent = "Predicting...";
+const loadModel = async () => {
+  if (modelWeights) return modelWeights;
+  result.textContent = "Loading model...";
+  const response = await fetch(MODEL_URL);
+  if (!response.ok) {
+    throw new Error("Model file not found.");
+  }
+  const data = await response.json();
+  modelWeights = {
+    dense1: {
+      kernel: new Float32Array(data.dense1.kernel),
+      bias: new Float32Array(data.dense1.bias),
+      outSize: data.dense1.shape[1],
+    },
+    dense2: {
+      kernel: new Float32Array(data.dense2.kernel),
+      bias: new Float32Array(data.dense2.bias),
+      outSize: data.dense2.shape[1],
+    },
+  };
+  return modelWeights;
+};
 
-  try {
-    const response = await fetch(predictUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+const getInputVector = () => {
+  const smallCanvas = document.createElement("canvas");
+  smallCanvas.width = 28;
+  smallCanvas.height = 28;
+  const smallCtx = smallCanvas.getContext("2d");
+  smallCtx.drawImage(canvas, 0, 0, smallCanvas.width, smallCanvas.height);
+  const imageData = smallCtx.getImageData(0, 0, 28, 28).data;
+  const input = new Float32Array(28 * 28);
+  for (let i = 0; i < 28 * 28; i += 1) {
+    input[i] = imageData[i * 4] / 255;
+  }
+  return input;
+};
 
-    const data = await response.json();
-    if (!response.ok) {
-      result.textContent = `Error: ${data.error || "Unknown"}`;
-      return;
+const dense = (input, kernel, bias, outSize) => {
+  const output = new Float32Array(outSize);
+  for (let j = 0; j < outSize; j += 1) {
+    let sum = bias[j];
+    for (let i = 0; i < input.length; i += 1) {
+      sum += input[i] * kernel[i * outSize + j];
     }
+    output[j] = sum;
+  }
+  return output;
+};
 
-    result.textContent = `Prediction: ${data.digit} (${data.confidence}%)`;
+const relu = (input) => {
+  const output = new Float32Array(input.length);
+  for (let i = 0; i < input.length; i += 1) {
+    output[i] = input[i] > 0 ? input[i] : 0;
+  }
+  return output;
+};
+
+const softmax = (logits) => {
+  let maxLogit = -Infinity;
+  for (let i = 0; i < logits.length; i += 1) {
+    if (logits[i] > maxLogit) {
+      maxLogit = logits[i];
+    }
+  }
+  let sum = 0;
+  const exps = new Float32Array(logits.length);
+  for (let i = 0; i < logits.length; i += 1) {
+    const value = Math.exp(logits[i] - maxLogit);
+    exps[i] = value;
+    sum += value;
+  }
+  for (let i = 0; i < exps.length; i += 1) {
+    exps[i] /= sum;
+  }
+  return exps;
+};
+
+const predictDigit = async () => {
+  try {
+    result.textContent = "Predicting...";
+    const weights = await loadModel();
+    const input = getInputVector();
+    const hidden = relu(dense(input, weights.dense1.kernel, weights.dense1.bias, weights.dense1.outSize));
+    const logits = dense(hidden, weights.dense2.kernel, weights.dense2.bias, weights.dense2.outSize);
+    const probabilities = softmax(logits);
+
+    let bestIndex = 0;
+    for (let i = 1; i < probabilities.length; i += 1) {
+      if (probabilities[i] > probabilities[bestIndex]) {
+        bestIndex = i;
+      }
+    }
+    const confidence = probabilities[bestIndex] * 100;
+    result.textContent = `Prediction: ${bestIndex} (${confidence.toFixed(1)}%)`;
   } catch (error) {
-    result.textContent = "Error: Failed to reach server.";
+    result.textContent = "Error: Model not loaded.";
   }
 };
 

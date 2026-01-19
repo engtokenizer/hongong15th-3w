@@ -1,3 +1,18 @@
-Get started by customizing your environment (defined in the .idx/dev.nix file) with the tools and IDE extensions you'll need for your project!
+# Handwritten Digit Recognizer (Static)
 
-Learn more at https://developers.google.com/idx/guides/customize-idx-env
+This app runs fully in the browser. The MNIST model weights are exported to
+`static/model/weights.json` and loaded by the frontend.
+
+## Run locally
+
+You can open `index.html` directly or serve the folder with any static server.
+
+## Update the model
+
+If you retrain `mnist_model.keras`, re-export the weights:
+
+```bash
+venv/bin/python tools/export_weights.py
+```
+
+Then commit the updated `static/model/weights.json`.
