@@ -5,6 +5,8 @@ const clearBtn = document.getElementById("clear-btn");
 const result = document.getElementById("result");
 
 let drawing = false;
+const apiBase = (window.API_BASE || "").replace(/\/$/, "");
+const predictUrl = apiBase ? `${apiBase}/predict` : "/predict";
 
 const setBackground = () => {
   ctx.fillStyle = "#000";
@@ -54,7 +56,7 @@ const predictDigit = async () => {
   result.textContent = "Predicting...";
 
   try {
-    const response = await fetch("/predict", {
+    const response = await fetch(predictUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

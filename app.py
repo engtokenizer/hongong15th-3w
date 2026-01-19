@@ -6,12 +6,14 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import tensorflow as tf
 
 from handwritten_digit_recognizer import DEFAULT_MODEL_PATH, MODEL_INPUT_SIZE, train_and_save
 
 
 app = Flask(__name__)
+CORS(app)
 MODEL_PATH = Path(DEFAULT_MODEL_PATH)
 MODEL = None
 
