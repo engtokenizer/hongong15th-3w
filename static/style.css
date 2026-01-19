@@ -1,0 +1,86 @@
+:root {
+  color-scheme: light;
+  font-family: "Trebuchet MS", "Lucida Sans", "Lucida Sans Unicode", sans-serif;
+  background: linear-gradient(135deg, #f7efe2, #e7f2ff);
+  color: #1a1a1a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px 16px;
+}
+
+.card {
+  max-width: 420px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+  text-align: center;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+p {
+  margin: 0 0 16px;
+  color: #444;
+}
+
+.canvas-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+canvas {
+  border-radius: 12px;
+  border: 2px solid #111;
+  background: #000;
+  width: 280px;
+  height: 280px;
+  touch-action: none;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+button {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 16px;
+  cursor: pointer;
+  background: #111;
+  color: #fff;
+}
+
+button.secondary {
+  background: #e1e1e1;
+  color: #111;
+}
+
+.result {
+  margin-top: 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
